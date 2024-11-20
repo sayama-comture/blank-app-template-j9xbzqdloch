@@ -1,0 +1,118 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "関数一覧取得 - ListFunctions",
+  "States": {
+    "関数一覧取得 - ListFunctions": {
+      "Type": "Task",
+      "Parameters": {},
+      "Resource": "arn:aws:states:::aws-sdk:lambda:listFunctions",
+      "Next": "関数ごとにループ - Map"
+    },
+    "関数ごとにループ - Map": {
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "最新のランタイムを設定 - Pass",
+        "States": {
+          "最新のランタイムを設定 - Pass": {
+            "Type": "Pass",
+            "Next": "タグ取得 - ListTags",
+            "ResultPath": "$.LatestRuntime",
+            "Parameters": {
+              "python": "python3.12",
+              "nodejs": "nodejs20.x"
+            }
+          },
+          "タグ取得 - ListTags": {
+            "Type": "Task",
+            "Parameters": {
+              "Resource.$": "$.FunctionArn"
+            },
+            "Resource": "arn:aws:states:::aws-sdk:lambda:listTags",
+            "Next": "特定のタグを持っているか - Choice",
+            "ResultPath": "$.Output"
+          },
+          "特定のタグを持っているか - Choice": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.Output.Tags.TestTag",
+                "IsPresent": true,
+                "Next": "ランタイムがpythonかnodejsか - Choice"
+              }
+            ],
+            "Default": "ループスキップ - Pass"
+          },
+          "ランタイムがpythonかnodejsか - Choice": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.Runtime",
+                "StringMatches": "python*",
+                "Next": "ランタイム更新(python) - UpdateFunctionConfiguration"
+              },
+              {
+                "Variable": "$.Runtime",
+                "StringMatches": "node*",
+                "Next": "ランタイム更新(nodejs) - UpdateFunctionConfiguration"
+              }
+            ],
+            "Default": "ループスキップ - Pass"
+          },
+          "ランタイム更新(python) - UpdateFunctionConfiguration": {
+            "Type": "Task",
+            "Parameters": {
+              "FunctionName.$": "$.FunctionName",
+              "Runtime.$": "$.LatestRuntime.python"
+            },
+            "Resource": "arn:aws:states:::aws-sdk:lambda:updateFunctionConfiguration",
+            "End": true
+          },
+          "ループスキップ - Pass": {
+            "Type": "Pass",
+            "End": true
+          },
+          "ランタイム更新(nodejs) - UpdateFunctionConfiguration": {
+            "Type": "Task",
+            "Parameters": {
+              "FunctionName.$": "$.FunctionName",
+              "Runtime.$": "$.LatestRuntime.nodejs"
+            },
+            "Resource": "arn:aws:states:::aws-sdk:lambda:updateFunctionConfiguration",
+            "End": true
+          }
+        }
+      },
+      "MaxConcurrency": 1,
+      "InputPath": "$.Functions",
+      "Next": "Next Markerをもっているか - Choice",
+      "ResultPath": "$.Output"
+    },
+    "Next Markerをもっているか - Choice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.NextMarker",
+          "IsPresent": true,
+          "Next": "関数一覧取得(Marker部分から) - ListFunctions"
+        }
+      ],
+      "Default": "終了 - Pass"
+    },
+    "関数一覧取得(Marker部分から) - ListFunctions": {
+      "Type": "Task",
+      "Parameters": {
+        "Marker.$": "$"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:lambda:listFunctions",
+      "Next": "関数ごとにループ - Map",
+      "InputPath": "$.NextMarker"
+    },
+    "終了 - Pass": {
+      "Type": "Pass",
+      "End": true
+    }
+  }
+}
