@@ -23,7 +23,7 @@ jobs:
             {
               \"Source\":      \"github\",
               \"DetailType\":  \"push\",
-              \"EventBusName\": \"github-bus\",
+              \"EventBusName\": \"test-sym-gtk-github-custom-bus\",
               \"Detail\":      \"{\\\"repo\\\":\\\"${{ github.repository }}\\\",\\\"branch\\\":\\\"${{ github.ref_name }}\\\",\\\"commit\\\":\\\"${{ github.sha }}\\\"}\"
             }
           ]"
