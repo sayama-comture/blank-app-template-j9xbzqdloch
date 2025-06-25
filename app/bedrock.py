@@ -4,7 +4,6 @@ import logging
 import os
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, TypeGuard
 
-
 from app.config import (
     BEDROCK_PRICING,
     DEFAULT_DEEP_SEEK_GENERATION_CONFIG,
