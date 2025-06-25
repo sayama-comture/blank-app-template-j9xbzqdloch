@@ -14,7 +14,7 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: 'ap-northeast-1' # リージョンを指定
-          role-to-assume: 'arn:aws:iam::309544929998:role/test-sym-gtk-github-put-eventbridge-role'
+          role-to-assume: 'arn:aws:iam::309544929998:role/test-sym-3-github-put-eventbridge-role'
 
       # 3) EventBridge へ push イベント送信
       - name: Send EventBridge event
@@ -23,7 +23,7 @@ jobs:
             {
               \"Source\":      \"github\",
               \"DetailType\":  \"push\",
-              \"EventBusName\": \"test-sym-gtk-github-custom-bus\",
+              \"EventBusName\": \"test-sym-3-github-custom-bus\",
               \"Detail\":      \"{\\\"repo\\\":\\\"${{ github.repository }}\\\",\\\"branch\\\":\\\"${{ github.ref_name }}\\\",\\\"commit\\\":\\\"${{ github.sha }}\\\"}\"
             }
           ]"
