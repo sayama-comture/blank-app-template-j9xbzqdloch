@@ -11,6 +11,7 @@ from app.repositories.api_publication import (
     find_stack_by_bot_id,
     find_usage_plan_by_id,
 )
+
 from app.repositories.common import RecordNotFoundError, decompose_sk, get_bot_table_client
 from app.utils import delete_api_key_from_secret_manager
 
