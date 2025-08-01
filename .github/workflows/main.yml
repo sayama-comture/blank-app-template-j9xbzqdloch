@@ -1,0 +1,29 @@
+name: Emit push to EventBridge
+
+on:
+  push:
+
+jobs:
+  emit:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: 'ap-northeast-1' # リージョンを指定
+          role-to-assume: 'arn:aws:iam::309544929998:role/sym-github-put-eventbridge-role'
+
+      # 3) EventBridge へ push イベント送信
+      - name: Send EventBridge event
+        run: |
+          aws events put-events --no-cli-pager --entries "[
+            {
+              \"Source\":      \"github\",
+              \"DetailType\":  \"push\",
+              \"EventBusName\": \"sym-github-custom-bus\",
+              \"Detail\":      \"{\\\"repo\\\":\\\"${{ github.repository }}\\\",\\\"branch\\\":\\\"${{ github.ref_name }}\\\",\\\"commit\\\":\\\"${{ github.sha }}\\\"}\"
+            }
+          ]"
