@@ -8,6 +8,7 @@ from queue import SimpleQueue
 from threading import Thread
 from typing import BinaryIO, Literal, TypedDict
 
+
 import boto3
 from app.agents.tools.agent_tool import ToolRunResult
 from app.auth import verify_token
